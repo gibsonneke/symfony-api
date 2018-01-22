@@ -27,5 +27,5 @@ Required: Git, Composer, PHP
 	#  http://127.0.0.1:8000/doc
 	
 TODO 
-	- POST, PUT, PATCH, DELETE
+	- PUT, PATCH, DELETE
 	- Use front-end framework to cummunicate with the API
