@@ -28,7 +28,7 @@ class BlogPostsController extends FOSRestController implements ClassResourceInte
     }
     
     /**
-     * Gets an individual Blog Post
+     * Gets an individual BlogPost
      *
      * @param int $id
      * @return mixed
@@ -44,10 +44,14 @@ class BlogPostsController extends FOSRestController implements ClassResourceInte
      * )
      */
     public function getAction(int $id){
-        $blogPost =  $this->getBlogPostRepository()->createFindOneByIdQuery($id)->getSingleResult();
-    
-        if ($blogPost === null) {
-            return new View(null, Response::HTTP_NOT_FOUND);
+        $blogPost = null;
+        
+        try{
+            $blogPost =  $this->getBlogPostRepository()->createFindOneByIdQuery($id)->getSingleResult();
+        }catch(\Exception $e){
+            if ($blogPost === null) {
+                return new View(null, Response::HTTP_NOT_FOUND);
+            }
         }
 
         return $blogPost;
@@ -103,10 +107,132 @@ class BlogPostsController extends FOSRestController implements ClassResourceInte
         $em = $this->getDoctrine()->getManager();
         $em->persist($blogPost);
         $em->flush();
+        
         $routeOptions = [
             'id' => $blogPost->getId(),
             '_format' => $request->get('_format'),
         ];
+        
         return $this->routeRedirectView('get_post', $routeOptions, Response::HTTP_CREATED);
+    }
+    
+    /**
+     * Updates an existing BlogPost
+     *
+     * @param Request $request
+     * @param int     $id
+     * @return View|\Symfony\Component\Form\Form
+     *
+     * @ApiDoc(
+     *     input="AppBundle\Form\Type\BlogPostType",
+     *     output="AppBundle\Entity\BlogPost",
+     *     statusCodes={
+     *         204 = "Returned when an existing BlogPost has been successful updated",
+     *         400 = "Return when errors",
+     *         404 = "Return when not found"
+     *     }
+     * )
+     */
+    public function putAction(Request $request, int $id)
+    {
+        $blogPost = $this->getBlogPostRepository()->find($id);
+        
+        if ($blogPost === null) {
+            return new View(null, Response::HTTP_NOT_FOUND);
+        }
+        
+        $form = $this->createForm(BlogPostType::class, $blogPost, [
+            'csrf_protection' => false,
+        ]);
+        
+        $form->submit($request->request->all());
+        
+        if (!$form->isValid()) {
+            return $form;
+        }
+        
+        $em = $this->getDoctrine()->getManager();
+        $em->flush();
+        
+        $routeOptions = [
+            'id' => $blogPost->getId(),
+            '_format' => $request->get('_format'),
+        ];
+        
+        return $this->routeRedirectView('get_post', $routeOptions, Response::HTTP_NO_CONTENT);
+    }
+    
+    /**
+     * Updates an existing BlogPost
+     *
+     * @param Request $request
+     * @param int     $id
+     * @return View|\Symfony\Component\Form\Form
+     *
+     * @ApiDoc(
+     *     input="AppBundle\Form\Type\BlogPostType",
+     *     output="AppBundle\Entity\BlogPost",
+     *     statusCodes={
+     *         204 = "Returned when an existing BlogPost has been successful updated",
+     *         400 = "Return when errors",
+     *         404 = "Return when not found"
+     *     }
+     * )
+     */
+    public function patchAction(Request $request, int $id)
+    {
+        $blogPost = $this->getBlogPostRepository()->find($id);
+        
+        if ($blogPost === null) {
+            return new View(null, Response::HTTP_NOT_FOUND);
+        }
+        
+        $form = $this->createForm(BlogPostType::class, $blogPost, [
+            'csrf_protection' => false,
+        ]);
+        
+        $form->submit($request->request->all(), false);
+        
+        if (!$form->isValid()) {
+            return $form;
+        }
+        
+        $em = $this->getDoctrine()->getManager();
+        $em->flush();
+        
+        $routeOptions = [
+            'id' => $blogPost->getId(),
+            '_format' => $request->get('_format'),
+        ];
+        
+        return $this->routeRedirectView('get_post', $routeOptions, Response::HTTP_NO_CONTENT);
+    }
+    
+    /**
+     * Deletes a BlogPost
+     *
+     * @param int $id
+     * @return View
+     *
+     * @ApiDoc(
+     *     statusCodes={
+     *         204 = "Returned when an existing BlogPost has been successful deleted",
+     *         404 = "Return when not found"
+     *     }
+     * )
+     */
+    public function deleteAction(int $id)
+    {
+        $blogPost = $this->getBlogPostRepository()->find($id);
+        
+        if ($blogPost === null) {
+            return new View(null, Response::HTTP_NOT_FOUND);
+        }
+        
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($blogPost);
+        $em->flush();
+        
+        return new View(null, Response::HTTP_NO_CONTENT);
     }
 }
