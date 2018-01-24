@@ -25,6 +25,3 @@ Required: Git, Composer, PHP
 6. Access the API documentation in your favourite browser
 
 	#  http://127.0.0.1:8000/doc
-	
-TODO 
-	- Use front-end framework to cummunicate with the API
